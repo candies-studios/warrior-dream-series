@@ -112,11 +112,11 @@
 .page-about .band-title::before {
   content: "";
   position: absolute;
-  left: -31px;
-  top: 16px;
+  left: -18px;
+  top: 7px;
   transform: none;
-  width: 44px;
-  height: 44px;
+  width: 33px;
+  height: 33px;
   background: var(--wds-red);
   z-index: -1;
 }
@@ -138,7 +138,7 @@
 .page-about .band-light .band-inner p { color: var(--wds-ink); }
 .page-about .band-dark  .band-inner p,
 .page-about .band-black .band-inner p { color: #fff; }
-.page-about .story-close { text-align: center !important; font-weight: 700; }
+.page-about .story-close { text-align: left !important; font-weight: 400; }
 
 /* ---------- Team ---------- */
 .page-about .team-title::before { display: block; }
@@ -180,7 +180,7 @@
 /* ---------- Tablet / mobile ---------- */
 @media (max-width: 1024px) {
   .page-about .band-title { font-size: 42px; line-height: 46px; }
-  .page-about .band-title::before { width: 36px; height: 36px; left: -24px; top: 12px; }
+  .page-about .band-title::before { width: 26px; height: 26px; left: -14px; top: 6px; }
 }
 @media (max-width: 767px) {
   .page-about .about-hero { background-position: 50% 20%; padding: 40px 16px; }
@@ -188,7 +188,7 @@
   .page-about .band { padding: 46px 0; }
   .page-about .band-inner, .page-about .team-head-band .container { padding: 0 20px; }
   .page-about .band-title { font-size: 25px; line-height: 30px; }
-  .page-about .band-title::before { width: 26px; height: 26px; left: -14px; top: 6px; }
+  .page-about .band-title::before { width: 16px; height: 16px; left: -9px; top: 4px; }
   .page-about .band-inner p { font-size: 16px; line-height: 27px; }
   .page-about .team-row.reverse .team-info { text-align: left; }
 }

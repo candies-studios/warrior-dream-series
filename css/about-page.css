@@ -1,0 +1,64 @@
+/* About page overrides — matches the hero/header look of warriorsdreamseries.com/about-us/ */
+
+/* ---------- Hero ---------- */
+.about-hero {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
+  text-align: center;
+}
+.about-hero .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: .55;
+}
+.about-hero .hero-inner {
+  position: relative;
+  z-index: 1;
+  padding: 48px 16px;
+}
+.about-hero h1 {
+  margin: 0;
+  font-family: "Teko", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  font-size: clamp(34px, 6.4vw, 92px);
+  line-height: .98;
+  letter-spacing: .5px;
+  text-shadow: 0 2px 14px rgba(0,0,0,.35);
+}
+.about-hero h1 .hero-sub {
+  display: block;
+  font-size: inherit;      /* same size as the title, like the original */
+  font-weight: 700;
+  line-height: inherit;
+  margin: 0;
+  max-width: 15em;
+  margin-inline: auto;
+}
+
+/* ---------- Header CTA: square red button with bell ---------- */
+.header-cta {
+  border-radius: 0 !important;
+  background: #d7272a !important;
+  font-family: "Teko", sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-cta .cta-label { order: 1; }
+.header-cta .cta-icon  { order: 2; width: 20px; height: 20px; }
+
+@media (max-width: 767px) {
+  .about-hero { min-height: 300px; }
+}

@@ -89,6 +89,10 @@
 
 /* ---------- Section headings (About Us / Our Mission / Our Story / Team) ---------- */
 .page-about .band { padding: 70px 0; }
+/* Team heading sits close to the first member */
+.page-about .band.team-head-band { padding-bottom: 0; }
+.page-about .team-head-band .band-title { margin-bottom: 0; }
+.page-about .team-rows > .team-row:first-child { padding-top: 24px; }
 .page-about .band-inner,
 .page-about .team-head-band .container {
   max-width: 1006px;

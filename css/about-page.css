@@ -23,20 +23,6 @@
 .page-about .site-nav a:hover,
 .page-about .site-nav a.active { color: var(--wds-red); }
 
-.page-about .header-cta {
-  font-family: "Teko", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: .5px;
-  line-height: 1;
-  text-transform: uppercase;
-  padding: 15px 20px;
-  border-radius: 0;
-  background: var(--wds-red);
-  gap: 10px;
-}
-.page-about .header-cta .cta-label { order: 1; padding-top: 2px; }
-.page-about .header-cta .cta-icon  { order: 2; width: 20px; height: 20px; }
 
 /* ---------- Hero ---------- */
 .page-about .about-hero {

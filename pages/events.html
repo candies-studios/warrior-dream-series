@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Events — Warriors Dream Series</title>
 <link rel="stylesheet" href="../css/style.css">
@@ -10,6 +11,14 @@
 <link rel="icon" type="image/png" sizes="192x192" href="../assets/images/favicon-192x192.png">
 <link rel="apple-touch-icon" href="../assets/images/apple-touch-icon.png">
 <style>
+/* Hero: same height + red separator as the Media Room hero */
+body .events-hero {
+  padding: 20px 0;
+  min-height: clamp(260px, 25vw, 360px);   /* same height as the Media Room hero */
+  box-sizing: border-box;
+  border-bottom: 4px solid #d20a0a;         /* red separator under the hero, same as Media Room */
+}
+@media (max-width: 767px) { body .events-hero { min-height: 240px; } }
 /* Upcoming event bands — matched to warriorsdreamseries.com/event-page */
 .eu-live .eu-left { align-items: center; text-align: center; }
 .eu-live .eu-left h2 { font-family: 'Teko', sans-serif; font-size: clamp(2.2rem, 3.4vw, 3rem); font-weight: 700; letter-spacing: .25px; text-transform: uppercase; line-height: 1.1; }
@@ -34,6 +43,7 @@
       <ul>
         <li><a href="../">Home</a></li>
         <li><a class="active" href="events.html">Events</a></li>
+        <li data-feature="rankings"><a href="rankings.html">Rankings</a></li>
         <li><a href="about.html">About Us</a></li>
         <li><a href="contact.html">Contact Us</a></li>
         <li><a href="media-room.html">Media Room</a></li>
@@ -102,6 +112,7 @@
         <div><span class="eu-label">Venue</span><span class="eu-value">FIT &amp; FIGHT CLUB WAGHOLI, PUNE</span></div>
       </div>
     </div>
+    <a class="eu-cta" href="wds-rising-star-8.html">View Fight Card</a>
   </div>
 </section>
 <section class="event-upcoming eu-live event-upcoming--fn19">
@@ -124,7 +135,7 @@
         <div><span class="eu-label">Venue</span><span class="eu-value">CIDCO EXHIBITION VASHI, NAVI MUMBAI</span></div>
       </div>
     </div>
-    <span class="eu-cta is-soon">Coming Soon</span>
+    <a class="eu-cta" href="wds-fight-night-19.html">View Fight Card</a>
   </div>
 </section>
 <section class="season-section" style="background-image: url('../assets/images/footer-fight.jpg');">
@@ -210,6 +221,7 @@
     <nav class="footer-nav" aria-label="Footer navigation">
       <a href="../">Home</a>
       <a class="active" href="events.html">Events</a>
+      <a data-feature="rankings" href="https://vchandanshive34.github.io/fightrank/rankings/mixed-martial-arts" target="_blank" rel="noopener">Rankings</a>
       <a href="about.html">About Us</a>
       <a href="contact.html">Contact Us</a>
       <a href="media-room.html">Media Room</a>

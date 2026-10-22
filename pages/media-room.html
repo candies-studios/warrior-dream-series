@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Media Room — Warriors Dream Series</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,10 +10,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&family=Oswald:wght@500;700&display=swap">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/media-page.css">
-<link rel="stylesheet" href="../css/footer.css">
-<link rel="icon" type="image/png" sizes="32x32" href="https://warriorsdreamseries.com/wp-content/uploads/2026/08/cropped-cropped_circle_image-5-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="https://warriorsdreamseries.com/wp-content/uploads/2026/08/cropped-cropped_circle_image-5-192x192.png">
-<link rel="apple-touch-icon" href="https://warriorsdreamseries.com/wp-content/uploads/2026/08/cropped-cropped_circle_image-5-180x180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/images/favicon-192x192.png">
+<link rel="apple-touch-icon" href="../assets/images/apple-touch-icon.png">
 </head>
 <body class="page-media">
 
@@ -23,6 +23,7 @@
       <ul>
         <li><a href="../">Home</a></li>
         <li><a href="events.html">Events</a></li>
+        <li data-feature="rankings"><a href="rankings.html">Rankings</a></li>
         <li><a href="about.html">About Us</a></li>
         <li><a href="contact.html">Contact Us</a></li>
         <li><a class="active" href="media-room.html">Media Room</a></li>
@@ -57,7 +58,7 @@
   </div>
 </div>
 
-<header class="war-room-hero" style="background-image: linear-gradient(rgba(0,0,0,.72), rgba(0,0,0,.88)), url('https://warriorsdreamseries.com/wp-content/uploads/2026/09/SMP_9855-scaled-e1788780557896.jpg');">
+<header class="war-room-hero" style="background-image: linear-gradient(rgba(0,0,0,.72), rgba(0,0,0,.88)), url('../assets/images/media-hero.jpg');">
   <div class="war-room-hero-inner">
     <h1>Press &amp; Media</h1>
     <p>Latest WDS Fight Night coverage and announcements</p>
@@ -207,12 +208,13 @@
 <footer class="site-footer">
   <div class="footer-content">
     <a class="footer-brand" href="../">
-      <img src="https://warriorsdreamseries.com/wp-content/uploads/2026/02/logo-new-e1786397673244.png" alt="Warriors Dream Series" width="224" height="89">
+      <img src="../assets/images/footer-logo.png" alt="Warriors Dream Series">
     </a>
 
     <nav class="footer-nav" aria-label="Footer navigation">
       <a href="../">Home</a>
       <a href="events.html">Events</a>
+      <a data-feature="rankings" href="https://vchandanshive34.github.io/fightrank/rankings/mixed-martial-arts" target="_blank" rel="noopener">Rankings</a>
       <a href="about.html">About Us</a>
       <a href="contact.html">Contact Us</a>
       <a class="active" href="media-room.html">Media Room</a>

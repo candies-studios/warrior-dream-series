@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rankings — Warriors Dream Series</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/images/favicon-192x192.png">
+<link rel="apple-touch-icon" href="../assets/images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Michroma&family=Montserrat:wght@500;600;700&family=Open+Sans:wght@300;400;600&display=swap">
+<style>
+    /* Rankings page — layout modelled on pflmma.com/rankings (header, footer & base fonts come from ../css/style.css) */
+    .rankings-main {
+      --pf-display: 'Michroma', 'Eurostile Extended', 'Arial Black', sans-serif;
+      --pf-name: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+      --pf-ui: 'Montserrat', Arial, sans-serif;
+      --pf-body: 'Open Sans', Arial, sans-serif;
+      --pf-ink: #373737;
+      --pf-muted: #888888;
+      --pf-red: #ff0404;
+      --pf-navy: #052383;
+      --pf-line: #c1c1c1;
+      --pf-dark: #0b0b0b;
+      --pf-card: #1a1a1a;
+      --pf-card-line: #3a3a3a;
+      background: #ffffff;
+      color: var(--pf-muted);
+      font-family: var(--pf-body);
+      font-weight: 300;
+    }
+    .pf-container { max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+
+    /* ---- Champions hero (dark band with a row of champion cards) ---- */
+    .pf-champions {
+      background-color: var(--pf-dark);
+      background-image: radial-gradient(ellipse at 50% 30%, rgba(80,80,80,0.35) 0%, rgba(11,11,11,0) 70%);
+      padding: 60px 0 40px;
+    }
+    .pf-champions-title {
+      font-family: var(--pf-display);
+      font-size: 40px;
+      line-height: 1.25;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: #fff;
+      text-align: center;
+      margin: 0 0 8px;
+    }
+    .pf-champions-sub {
+      font-family: var(--pf-ui);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #9a9a9a;
+      text-align: center;
+      margin: 0 0 40px;
+    }
+    .pf-track {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 0 0 24px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: #444 transparent;
+    }
+    .pf-track::-webkit-scrollbar { height: 6px; }
+    .pf-track::-webkit-scrollbar-thumb { background: #444; }
+    .pf-card {
+      position: relative;
+      flex: 0 0 246px;
+      height: 410px;
+      overflow: hidden;
+      background-color: var(--pf-card);
+      background-image: radial-gradient(ellipse at 50% 35%, rgba(140,20,20,0.45) 0%, rgba(26,26,26,0) 65%);
+      border: 1px solid var(--pf-card-line);
+      scroll-snap-align: start;
+      color: #fff;
+      text-decoration: none;
+      transition: border-color .2s ease;
+    }
+    a.pf-card:hover { border-color: var(--pf-red); }
+    .pf-card.is-vacant { background-image: radial-gradient(ellipse at 50% 35%, rgba(90,90,90,0.35) 0%, rgba(26,26,26,0) 65%); }
+    .pf-card-division {
+      position: absolute;
+      top: 16px; left: 12px;
+      z-index: 3;
+      padding-left: 8px;
+      border-left: 3px solid var(--pf-red);
+      font-family: var(--pf-display);
+      font-size: 10px;
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      color: #fff;
+      max-width: 200px;
+    }
+    .pf-card-weight { display: block; margin-top: 3px; font-family: var(--pf-ui); font-weight: 600; color: #9a9a9a; letter-spacing: 1px; }
+    .pf-card-watermark {
+      position: absolute;
+      top: 50%; right: -6px;
+      z-index: 0;
+      transform: translateY(-50%);
+      writing-mode: vertical-rl;
+      font-family: var(--pf-display);
+      font-size: 52px;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.07);
+      pointer-events: none;
+    }
+    .pf-card-img {
+      position: absolute;
+      left: 0; right: 0; bottom: 50px;
+      z-index: 1;
+      height: 300px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .pf-card-img img { max-width: 100%; max-height: 100%; object-fit: contain; object-position: bottom; display: block; }
+    .pf-card-img svg { width: 150px; height: 170px; color: #2c2c2c; }
+    .pf-card-info {
+      position: absolute;
+      left: 12px; right: 12px; bottom: 14px;
+      z-index: 2;
+    }
+    .pf-card-info::before {
+      content: '';
+      position: absolute;
+      left: -13px; right: -13px; bottom: -15px;
+      height: 150px;
+      background: linear-gradient(to top, rgba(14,14,14,0.96) 35%, rgba(14,14,14,0));
+      z-index: -1;
+    }
+    .pf-card-meta { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+    .pf-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--pf-ui);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--pf-red);
+    }
+    .pf-badge svg { width: 18px; height: 12px; display: block; }
+    .pf-card-record { font-family: var(--pf-ui); font-size: 10px; font-weight: 600; color: #9a9a9a; letter-spacing: 0.5px; }
+    .pf-card-name {
+      font-family: var(--pf-name);
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 0.9;
+      color: #fff;
+      margin: 6px 0 0;
+      min-height: 61px;
+      display: flex;
+      align-items: flex-end;
+      overflow-wrap: break-word;
+    }
+    .pf-card-name.is-long { font-size: 28px; }
+    .is-vacant .pf-card-name { color: #8a8a8a; }
+
+    /* ---- Fighter rankings grid ---- */
+    .pf-rankings { padding: 70px 0 40px; }
+    .pf-rankings-title {
+      font-family: var(--pf-display);
+      font-size: 32px;
+      line-height: 1.5;
+      letter-spacing: 0.32px;
+      text-transform: uppercase;
+      color: var(--pf-ink);
+      margin: 0 0 6px;
+      text-align: center;
+    }
+    .pf-method {
+      max-width: 760px;
+      margin: 0 auto 48px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #6a6a6a;
+    }
+    .pf-method summary {
+      display: inline-block;
+      cursor: pointer;
+      list-style: none;
+      font-family: var(--pf-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--pf-navy);
+    }
+    .pf-method summary::-webkit-details-marker { display: none; }
+    .pf-method summary::after { content: ' +'; }
+    .pf-method[open] summary::after { content: ' −'; }
+    .pf-method p { margin: 12px 0 0; }
+    .pf-method strong { font-weight: 600; color: var(--pf-ink); }
+
+    .pf-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 24px;
+      row-gap: 48px;
+      align-items: start;
+    }
+    .pf-box { min-width: 0; }
+    .pf-box-title {
+      border-bottom: 1px solid var(--pf-line);
+      text-align: center;
+      margin: 0 0 16px;
+    }
+    .pf-box-title h3 {
+      margin: 0;
+      padding: 0 0 16px;
+      font-family: var(--pf-ui);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.13px;
+      text-transform: uppercase;
+      color: var(--pf-navy);
+    }
+    .pf-box-title button {
+      all: unset;
+      display: block;
+      width: 100%;
+      cursor: default;
+    }
+    .pf-box-weight { color: var(--pf-muted); font-weight: 600; margin-left: 6px; }
+    .pf-chevron { display: none; }
+
+    .pf-top { position: relative; overflow: hidden; }
+    .pf-top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--pf-ui);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--pf-red);
+      margin: 0 0 6px;
+    }
+    .pf-top-badge svg { width: 22px; height: 14px; display: block; }
+    .pf-top-name {
+      font-family: var(--pf-name);
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--pf-ink);
+      margin: 0 0 6px;
+      min-height: 72px;
+      overflow-wrap: anywhere;
+    }
+    .pf-top-name a { color: inherit; text-decoration: none; }
+    .pf-top-name a:hover { color: var(--pf-red); }
+    .pf-top.is-vacant .pf-top-name { color: #b3b3b3; }
+    .pf-top-record {
+      font-family: var(--pf-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      color: var(--pf-muted);
+      margin: 0;
+      min-height: 14px;
+    }
+    .pf-top-img {
+      height: 166px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 6px;
+      border-bottom: 1px solid var(--pf-line);
+    }
+    .pf-top-img img { width: 72%; max-width: 240px; height: auto; display: block; object-fit: contain; object-position: top; }
+    .pf-top-img svg { width: 130px; height: 150px; margin-top: 16px; color: #e3e3e3; display: block; }
+
+    .pf-list { list-style: none; margin: 8px 0 0; padding: 0; }
+    .pf-line { margin: 8px 0; }
+    .pf-line a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+    }
+    .pf-rank {
+      flex: 0 0 22px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #fff;
+      font-family: var(--pf-body);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pf-head {
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      margin: 0 8px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #ececec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--pf-ui);
+      font-size: 10px;
+      font-weight: 700;
+      color: #9a9a9a;
+    }
+    .pf-head img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 8%; display: block; transform: scale(1.6); transform-origin: 50% 0; }
+    .pf-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-family: var(--pf-ui);
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--pf-ink);
+      overflow-wrap: anywhere;
+    }
+    .pf-record {
+      flex: 0 0 auto;
+      margin-left: 6px;
+      font-family: var(--pf-body);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--pf-muted);
+      white-space: nowrap;
+    }
+    .pf-line a:hover .pf-name { color: var(--pf-red); }
+    .pf-empty { font-family: var(--pf-ui); font-size: 13px; font-weight: 500; color: var(--pf-muted); margin: 14px 0 0; }
+
+    @media (max-width: 1100px) {
+      .pf-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 991px) {
+      .pf-champions-title { font-size: 32px; }
+    }
+    /* Mobile: one column, each division collapses behind its title like pflmma.com */
+    @media (max-width: 767px) {
+      .pf-container { padding: 0 16px; }
+      .pf-champions { padding: 40px 0 28px; }
+      .pf-champions-title { font-size: 24px; }
+      .pf-champions-sub { margin-bottom: 26px; }
+      .pf-rankings { padding: 44px 0 24px; }
+      .pf-rankings-title { font-size: 22px; }
+      .pf-grid { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+      .pf-box-title { margin: 0; }
+      .pf-box-title button { cursor: pointer; }
+      .pf-box-title h3 { padding: 22px 0; }
+      .pf-chevron { display: inline-block; width: 10px; height: 10px; margin-left: 8px; vertical-align: 1px; transition: transform .2s ease; }
+      .pf-box.open .pf-chevron { transform: rotate(180deg); }
+      .pf-box-body { display: none; padding: 16px 0 24px; }
+      .pf-box.open .pf-box-body { display: block; }
+      .pf-top-name { min-height: 0; }
+    }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="../" class="site-logo"><img src="../assets/images/logo.png" alt="Warriors Dream Series"></a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <ul>
+        <li><a href="../">Home</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a class="active" href="rankings.html">Rankings</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+        <li><a href="media-room.html">Media Room</a></li>
+      </ul>
+    </nav>
+    <button type="button" class="header-cta js-community-open" aria-haspopup="dialog" aria-controls="community-modal">
+      <svg class="cta-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>
+      <span class="cta-label">Warrior Community</span>
+    </button>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+  </div>
+</header>
+
+<div class="community-modal" id="community-modal" role="dialog" aria-modal="true" aria-labelledby="community-title" hidden>
+  <div class="community-backdrop js-community-close"></div>
+  <div class="community-dialog">
+    <button type="button" class="community-close js-community-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+    </button>
+    <div class="community-frame">
+      <h2 id="community-title" class="community-title">Stay Connected</h2>
+      <p class="community-text">Get instant fight results and event details.</p>
+      <a class="community-btn community-btn--whatsapp" href="https://chat.whatsapp.com/F9RTQZnkuSt49lgWaZDePI?mode=gi_t" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.2 21.8l5.1-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.1 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg>
+        <span>Rising Star WhatsApp Updates</span>
+      </a>
+      <a class="community-btn community-btn--instagram" href="https://www.instagram.com/channel/AbYt6bfYlB0ADSEK/?igsh=YnhvdHJtcGRzMmR4" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg>
+        <span>Rising Star Instagram Broadcast</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<main class="rankings-main">
+  <!-- Champions hero (pflmma.com style) -->
+  <section class="pf-champions" aria-labelledby="pf-champions-title">
+    <div class="pf-container">
+      <h1 class="pf-champions-title" id="pf-champions-title">WDS Champions</h1>
+      <p class="pf-champions-sub">Professional MMA · Official, finalized results</p>
+      <div class="pf-track" id="championsTrack"></div>
+    </div>
+  </section>
+
+  <!-- Fighter rankings: top 10 per division -->
+  <section class="pf-rankings" aria-labelledby="pf-rankings-title">
+    <div class="pf-container">
+      <h2 class="pf-rankings-title" id="pf-rankings-title">WDS Fighter Rankings</h2>
+
+      <details class="pf-method">
+        <summary>How the ranking works</summary>
+        <p><strong>WDS Ranking Score</strong> = (Win% × 0.7 + Win Method Weight × 0.3) × √(total fights). Every win adds a weight for how it was won — earlier finishes count more (KO/TKO R1 0.75 · R2 0.70 · R3 0.65, Submission R1 0.70 · R2 0.65 · R3 0.60, Decision 0.55). Only official, finalized <strong>professional</strong> MMA bouts count — amateur bouts are not ranked. Women are ranked separately. Each division shows its champion and the top 10 contenders. Click a fighter to see their profile and every WDS fight they have had.</p>
+      </details>
+
+      <div class="pf-grid" id="rankingsGrid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <a class="footer-brand" href="../">
+      <img src="../assets/images/footer-logo.png" alt="Warriors Dream Series">
+    </a>
+
+    <nav class="footer-nav" aria-label="Footer navigation">
+      <a href="../">Home</a>
+      <a href="events.html">Events</a>
+      <a class="active" href="rankings.html">Rankings</a>
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+      <a href="media-room.html">Media Room</a>
+    </nav>
+
+    <div class="footer-socials">
+      <a href="https://www.instagram.com/warriors_dream_series/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.facebook.com/people/Warriors-Dream-Series/61588120785459/" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="wds-fb-m"><rect width="24" height="24" fill="#fff"/><path d="M13.4 23v-8.2h2.7l.4-3.2h-3.1V9.6c0-.9.3-1.6 1.6-1.6h1.7V5.2c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.4H7.6v3.2h2.7V23z" fill="#000"/></mask></defs><circle cx="12" cy="12" r="11" fill="currentColor" mask="url(#wds-fb-m)"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/company/warriors-dream-series" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="wds-li-m"><rect width="24" height="24" fill="#fff"/><rect x="5.6" y="9.4" width="2.9" height="9" fill="#000"/><circle cx="7.05" cy="6.6" r="1.7" fill="#000"/><path d="M10.4 9.4h2.8v1.3c.4-.8 1.4-1.5 2.9-1.5 3 0 3.5 1.9 3.5 4.4v4.8h-2.9v-4.3c0-1 0-2.4-1.5-2.4s-1.8 1.1-1.8 2.3v4.4h-2.9z" fill="#000"/></mask></defs><rect x="2" y="2" width="20" height="20" rx="2.5" fill="currentColor" mask="url(#wds-li-m)"/></svg>
+      </a>
+      <a href="https://www.youtube.com/@WarriorsDreamSeries" target="_blank" rel="noopener" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="wds-yt-m"><rect width="24" height="24" fill="#fff"/><path d="M10 8.6v6.8l5.8-3.4z" fill="#000"/></mask></defs><rect x="1" y="4.5" width="22" height="15" rx="4.5" fill="currentColor" mask="url(#wds-yt-m)"/></svg>
+      </a>
+    </div>
+
+    <p class="footer-copy">2026 © Warriors Dream Series – All Rights Reserved</p>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="../js/wds-config.js"></script>
+<script src="../js/wds-data.js"></script>
+  <script>
+    // ---------------------------------------------------------------------------
+    // WDS Rankings — PROFESSIONAL fighters only.
+    //   • Every finalized bout marked PROFESSIONAL in the database counts (MMA only);
+    //     amateur and K1 bouts are left out.
+    //   • Men: Flyweight → Heavyweight (8 divisions). Women are ranked separately:
+    //     Strawweight, Flyweight, Bantamweight. Catchweight, men's strawweight and
+    //     any other division are left out.
+    //   • Score = (Win% × 0.7 + Win Method Weight × 0.3) × √(total fights), the
+    //     committee formula, using the win-method weights stored in the database.
+    // ---------------------------------------------------------------------------
+
+    const MEN_DIVISIONS = [
+      { key: 'flyweight',        name: 'Flyweight',         subtitle: '56.7 kg' },
+      { key: 'bantamweight',     name: 'Bantamweight',      subtitle: '61.2 kg' },
+      { key: 'featherweight',    name: 'Featherweight',     subtitle: '65.8 kg' },
+      { key: 'lightweight',      name: 'Lightweight',       subtitle: '70.3 kg' },
+      { key: 'welterweight',     name: 'Welterweight',      subtitle: '77.1 kg' },
+      { key: 'middleweight',     name: 'Middleweight',      subtitle: '83.9 kg' },
+      { key: 'lightheavyweight', name: 'Light Heavyweight', subtitle: '93 kg' },
+      { key: 'heavyweight',      name: 'Heavyweight',       subtitle: '120.2 kg' }
+    ];
+    const WOMEN_DIVISIONS = [
+      { key: 'w-strawweight',  name: "Women's Strawweight",  subtitle: '52.2 kg' },
+      { key: 'w-flyweight',    name: "Women's Flyweight",    subtitle: '56.7 kg' },
+      { key: 'w-bantamweight', name: "Women's Bantamweight", subtitle: '61.2 kg' }
+    ];
+    // The database does not store a fighter's gender yet: women professionals are
+    // listed here (lower case). Add new names when a women's pro bout is booked.
+    const WOMEN_FIGHTERS = new Set([
+      'surbala devi laishram', 'radha gupta', 'veronika partikova', 'lakhi das'
+    ]);
+    // Bouts saved without a weight class: division confirmed from the official record (Sherdog).
+    const DIVISION_FIXES = { 'mahboob khan|sangram singh': 'flyweight' };
+
+    const DEFAULT_WEIGHTS = {
+      KO_HEAD: [0.75, 0.70, 0.65], KO_BODY: [0.75, 0.70, 0.65], TKO: [0.75, 0.70, 0.65],
+      DOCTOR_STOPPAGE: [0.75, 0.70, 0.65], CORNER_STOPPAGE: [0.75, 0.70, 0.65],
+      SUBMISSION: [0.70, 0.65, 0.60], RNC: [0.70, 0.65, 0.60],
+      DECISION_UNANIMOUS: 0.55, DECISION_SPLIT: 0.55, DECISION_MAJORITY: 0.55, DQ: 0.55
+    };
+    const RESULT_LABEL = {
+      DECISION_UNANIMOUS: 'Unanimous decision', DECISION_SPLIT: 'Split decision', DECISION_MAJORITY: 'Majority decision',
+      DRAW: 'Draw', MAJORITY_DRAW: 'Majority draw', KO_HEAD: 'KO', KO_BODY: 'KO (body)', TKO: 'TKO',
+      SUBMISSION: 'Submission', RNC: 'Submission', DOCTOR_STOPPAGE: 'Doctor stoppage',
+      CORNER_STOPPAGE: 'Corner stoppage', DQ: 'Disqualification', NO_CONTEST: 'No contest'
+    };
+
+    // Saved list of finalized professional bouts (shown if the database cannot be reached).
+    // [event, date, bout #, weight class, red, blue, winner R/B/'', result type, round, end second, event slug]
+    const SAVED_PRO_BOUTS = [
+      ["WDS Fight Night 1", "2022-04-09", 1, "Flyweight", "Arun Bist", "Arbaj Shaikh", "B", "KO_HEAD", 1, 243, "wds-fight-night-1"],
+      ["WDS Fight Night 1", "2022-04-09", 2, "Bantamweight", "Gopal Badaila", "Raj Madhesiya", "B", "SUBMISSION", 1, 86, "wds-fight-night-1"],
+      ["WDS Fight Night 1", "2022-04-09", 3, "Flyweight", "Santosh Bag", "Deepak Bhardwaj", "B", "DECISION_SPLIT", 3, 300, "wds-fight-night-1"],
+      ["WDS Fight Night 1", "2022-04-09", 4, "Bantamweight", "Vikash Choudhary", "Manjeet Dayal", "B", "TKO", 2, 137, "wds-fight-night-1"],
+      ["WDS Fight Night 1", "2022-04-09", 5, "Middleweight", "Omkar Pawar", "Shankar Bhiswas", "B", "KO_HEAD", 1, 21, "wds-fight-night-1"],
+      ["WDS Fight Night 1", "2022-04-09", 6, "Welterweight", "Vaibhav Mistry", "Farhan Siddique", "B", "RNC", 1, 165, "wds-fight-night-1"],
+      ["WDS Fight Night 2", "2022-07-23", 1, "Lightweight", "Mazhar Khan", "Sujit Gund", "B", "TKO", 2, 214, "wds-fight-night-2"],
+      ["WDS Fight Night 2", "2022-07-23", 2, "Bantamweight", "Anubhav Kashyap", "Raj Madhesiya", "B", "SUBMISSION", 3, 86, "wds-fight-night-2"],
+      ["WDS Fight Night 2", "2022-07-23", 3, "Flyweight", "Mohammed Dawood Khan", "Arun Bist", "B", "SUBMISSION", 1, 224, "wds-fight-night-2"],
+      ["WDS Fight Night 2", "2022-07-23", 4, "Flyweight", "Arjun Kumar", "Sumit Kumar", "B", "SUBMISSION", 1, 95, "wds-fight-night-2"],
+      ["WDS Fight Night 2", "2022-07-23", 5, "Featherweight", "Rahul Sonkamble", "Paalee Sathishwer", "B", "TKO", 1, 180, "wds-fight-night-2"],
+      ["WDS Fight Night 2", "2022-07-23", 6, "Featherweight", "Ravi Saw", "Edukondal Rao", "B", "SUBMISSION", 2, 99, "wds-fight-night-2"],
+      ["WDS Fight Night 4", "2023-03-25", 6, "Heavyweight", "Gaganpal Singh Dua", "Ranveer", "R", "TKO", 1, 30, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 7, "Middleweight", "Omkar Pawar", "Jayesh Pandey", "R", "KO_HEAD", 1, 18, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 8, "Flyweight", "Mahesh Lad", "Sagar Kashyap", "B", "TKO", 1, 96, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 9, "Strawweight", "Santosh Bag", "Bambam Thounaujam", "R", "SUBMISSION", 1, 132, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 10, "Welterweight", "Prathamesh Deshpande", "Sujit Gund", "R", "TKO", 1, 87, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 11, "Flyweight", "Fahad Khan", "Ajay Payal", "R", "TKO", 3, 269, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 12, "Catchweight", "Karan Chauhan", "Raj Madhesiya", "B", "TKO", 1, 175, "wds-fight-night-4"],
+      ["WDS Fight Night 4", "2023-03-25", 13, "Flyweight", "Manthan Rane", "Arun Bist", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-4"],
+      ["WDS Fight Night 5", "2023-07-30", 1, "Featherweight", "Rishabh Patel", "Tribhuvan Issar", "", "MAJORITY_DRAW", 3, 300, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 2, "Flyweight", "Vikas Jaiswar", "Raju K M", "B", "SUBMISSION", 1, 35, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 3, "Flyweight", "Jeko Laishram", "Prashant Patel", "R", "SUBMISSION", 2, 286, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 4, "Lightweight", "Shiv Kumar", "Nishant Karkera", "", "NO_CONTEST", null, null, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 5, "Featherweight", "Rehan Lulla", "Niranjan Singh", "R", "DECISION_SPLIT", 3, 300, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 6, "Strawweight", "Sagar Kashyap", "Vikas Gupta", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-5"],
+      ["WDS Fight Night 5", "2023-07-30", 7, "Heavyweight", "Gaganpal Singh Dua", "Zaid Sayyed Shaikh", "R", "TKO", 1, 94, "wds-fight-night-5"],
+      ["WDS Fight Night 6", "2023-10-28", 1, "Bantamweight", "Mohan Gorle", "Siddharth Kothapalli", "B", "RNC", 1, 80, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 2, "Featherweight", "Savar Basarimarad", "Ketan Gharat", "R", "TKO", 1, 160, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 3, "Welterweight", "Prathamesh Deshpande", "Kimson Tony", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 4, "Flyweight", "Gautam Moyong", "Jeko Laishram", "B", "RNC", 3, 198, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 5, "Featherweight", "Tribhuvan Issar", "Thirubalachandran D", "B", "KO_HEAD", 1, 16, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 6, "Featherweight", "Nishant Karkera", "Karan Chauhan", "R", "TKO", 1, 170, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 7, "Strawweight", "Kerobin Tudu", "Prathamesh Kenjale", "B", "RNC", 2, 41, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 8, "Flyweight", "Mukul Anand", "Sunny Khatri", "B", "RNC", 3, 99, "wds-fight-night-6"],
+      ["WDS Fight Night 6", "2023-10-28", 9, "Featherweight", "Nishant Karkera", "Thirubalachandran D", "R", "TKO", 1, 120, "wds-fight-night-6"],
+      ["WDS Fight Night 7", "2024-02-11", 1, "Featherweight", "Gaurav Kumar Rai", "Karan Chauhan", "B", "RNC", 1, 27, "wds-fight-night-7"],
+      ["WDS Fight Night 7", "2024-02-11", 2, "Bantamweight", "Siddharth Kothapalli", "Ganeshraj Srinivasan", "B", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-7"],
+      ["WDS Fight Night 7", "2024-02-11", 3, "Catchweight", "Prathamesh Deshpande", "Wasim Arsalan Malik", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-7"],
+      ["WDS Fight Night 7", "2024-02-11", 4, "Strawweight", "Surbala Devi Laishram", "Radha Gupta", "R", "TKO", 1, 17, "wds-fight-night-7"],
+      ["WDS Fight Night 7", "2024-02-11", 5, "Bantamweight", "Chandiran Thirubala", "Naina Mohammed", "B", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-7"],
+      ["WDS Fight Night 8", "2024-05-25", 9, "Welterweight", "Virendra Baghel", "Purushothaman M K", "B", "SUBMISSION", 1, 245, "wds-fight-night-8"],
+      ["WDS Fight Night 8", "2024-05-25", 11, "Flyweight", "Veronika Partikova", "Lakhi Das", "B", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-8"],
+      ["WDS Fight Night 8", "2024-05-25", 12, "Flyweight", "Thengal Ranjan", "Arun Bist", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-8"],
+      ["WDS Fight Night 9", "2024-09-01", 6, "Bantamweight", "Tulashidas Ningombam", "Thoidingjam Goroba Singh", "R", "SUBMISSION", 1, 169, "wds-fight-night-9"],
+      ["WDS Fight Night 9", "2024-09-01", 7, "Bantamweight", "Siddharth Kothapalli", "Karandeep Singh", "R", "SUBMISSION", 1, 282, "wds-fight-night-9"],
+      ["WDS Fight Night 9", "2024-09-01", 8, "Featherweight", "Lionel Mascarenhas", "Rishabh Patel", "R", "TKO", 2, 142, "wds-fight-night-9"],
+      ["WDS Fight Night 9", "2024-09-01", 9, "Bantamweight", "Shoaib Khan", "Satgunhao Kipgen", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-9"],
+      ["WDS Fight Night 9", "2024-09-01", 10, "Flyweight", "Aaquib Javid", "Maruf Alam Shaikh", "R", "RNC", 1, 134, "wds-fight-night-9"],
+      ["WDS Fight Night 9", "2024-09-01", 11, "Lightweight", "Krishna Payasi", "Rudy Tshisuaka", "R", "DECISION_SPLIT", 3, 300, "wds-fight-night-9"],
+      ["WDS Fight Night 10", "2025-01-19", 8, "Flyweight", "Nazareth Lalthazuala", "Wahedullah Sediqi", "R", "TKO", 1, 113, "wds-fight-night-10"],
+      ["WDS Fight Night 10", "2025-01-19", 9, "Lightweight", "Mohsin Shaikh", "Shubham Pandey", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-10"],
+      ["WDS Fight Night 10", "2025-01-19", 10, "Bantamweight", "Prathamesh Kenjale", "Tulashidas Ningombam", "R", "RNC", 2, 216, "wds-fight-night-10"],
+      ["WDS Fight Night 10", "2025-01-19", 11, "", "Mahboob Khan", "Sangram Singh", "R", "KO_HEAD", 1, 68, "wds-fight-night-10"],
+      ["WDS Fight Night 12", "2025-05-04", 12, "Bantamweight", "Karandeep Singh", "Tulashidas Ningombam", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-12"],
+      ["WDS Fight Night 12", "2025-05-04", 13, "Welterweight", "Rayyan Butt", "Purushothaman M K", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-12"],
+      ["WDS Fight Night 12", "2025-05-04", 14, "Catchweight", "Niranjan Phanjoubam", "Rajkumar R", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-12"],
+      ["WDS Fight Night 13", "2025-07-27", 16, "Catchweight", "Gurtej Singh", "Rayyan Butt", "", "NO_CONTEST", null, null, "wds-fight-night-13"],
+      ["WDS Fight Night 13", "2025-07-27", 17, "Flyweight", "Shivaraj Basappa", "Vikas Jaiswar", "R", "RNC", 1, 108, "wds-fight-night-13"],
+      ["WDS Fight Night 13", "2025-07-27", 18, "Bantamweight", "Karandeep Singh", "Ashok Bagde", "B", "SUBMISSION", 1, 54, "wds-fight-night-13"],
+      ["WDS Fight Night 14", "2025-11-09", 15, "Flyweight", "Anubhav Kashyap", "Sandeep Baghel", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-14"],
+      ["WDS Fight Night 14", "2025-11-09", 16, "Catchweight", "Gurkirat Singh Gill", "Akash Rathod", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-14"],
+      ["WDS Fight Night 14", "2025-11-09", 17, "Bantamweight", "Tulashidas Ningombam", "Suraj Patkar", "R", "TKO", 1, 268, "wds-fight-night-14"],
+      ["WDS Fight Night 14", "2025-11-09", 18, "Flyweight", "Ashish Rawat", "Shivaraj Basappa", "R", "RNC", 3, 203, "wds-fight-night-14"],
+      ["WDS Fight Night 14", "2025-11-09", 19, "Bantamweight", "Karan Singh", "Ashok Bagde", "B", "SUBMISSION", 1, 157, "wds-fight-night-14"],
+      ["WDS Fight Night 16", "2026-03-28", 1, "Bantamweight", "Ashok Bagde", "Andrey Chelbaev", "R", "RNC", 2, 294, "wds-fight-night-16"],
+      ["WDS Fight Night 16", "2026-03-28", 2, "Lightweight", "Gurtej Singh", "Rishabh Patel", "R", "CORNER_STOPPAGE", 2, 300, "wds-fight-night-16"],
+      ["WDS Fight Night 16", "2026-03-28", 3, "Flyweight", "Harsh Pandya", "Amit Amauriya", "R", "RNC", 2, 172, "wds-fight-night-16"],
+      ["WDS Fight Night 16", "2026-03-28", 4, "Bantamweight", "Karan Jadhav", "Karandeep Singh", "R", "SUBMISSION", 3, 66, "wds-fight-night-16"],
+      ["WDS Fight Night 16", "2026-03-28", 5, "Flyweight", "Anubhav Kashyap", "Rehan Rizvi", "R", "TKO", 2, 88, "wds-fight-night-16"],
+      ["WDS Fight Night 17", "2026-06-06", 1, "Welterweight", "Ben Holdsworth", "Kimson Tony", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 2, "Bantamweight", "Ashok Bagde", "Rohit Raina", "R", "SUBMISSION", 2, 87, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 3, "Featherweight", "Muhiddinov Oyatullo", "Kesavan M", "R", "SUBMISSION", 1, 286, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 4, "Flyweight", "A Shabarish", "Thiaumuanlal Guite", "R", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 5, "Featherweight", "Raj Singh Baghel", "Rajkumar R", "R", "RNC", 1, 190, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 6, "Flyweight", "Sangramsingh Godse", "Sagar Ramdas Dange", "R", "TKO", 2, 213, "wds-fight-night-17"],
+      ["WDS Fight Night 17", "2026-06-06", 7, "Lightweight", "Varun Sanyal", "Karan Chauhan", "R", "RNC", 1, 264, "wds-fight-night-17"],
+      ["WDS Rising Star 7", "2026-07-25", 1, "Lightweight", "Pruthvi Gulla", "Shreenath Barale", "R", "DECISION_UNANIMOUS", 3, 240, "wds-rising-star-7"],
+      ["WDS Rising Star 7", "2026-07-25", 2, "Flyweight", "Shrishti Dethe", "Parth Sapkal", "R", "DECISION_UNANIMOUS", 3, 240, "wds-rising-star-7"],
+      ["WDS Rising Star 7", "2026-07-25", 3, "Flyweight", "Bhuvan Rai", "Vijay Yadav", "R", "RNC", 2, 220, "wds-rising-star-7"],
+      ["WDS Rising Star 7", "2026-07-25", 4, "Bantamweight", "Ashish Maurya", "Rajkrishna Sharma", "R", "CORNER_STOPPAGE", 3, 156, "wds-rising-star-7"],
+      ["WDS Rising Star 7", "2026-07-25", 5, "Middleweight", "Avaneesh Kailash Patil", "Mittul Rajput", "R", "DECISION_UNANIMOUS", 3, 240, "wds-rising-star-7"],
+      ["WDS Rising Star 7", "2026-07-25", 6, "Strawweight", "Narayan Tejbeer Pun", "Ritesh Kanojiya", "R", "DECISION_UNANIMOUS", 3, 240, "wds-rising-star-7"],
+      ["WDS Fight Night 18", "2026-08-29", 1, "Flyweight", "Kimbert Alintozon", "Jeko Laishram", "B", "DECISION_UNANIMOUS", 3, 300, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 2, "Light Heavyweight", "Gaganpal Singh Dua", "Tarun M Hiremath", "R", "TKO", 1, 222, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 3, "Flyweight", "Bishal Sahu", "E. Sandigon", "R", "TKO", 1, 291, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 4, "Flyweight", "Shoaib Khan", "JR Alejandro", "R", "TKO", 1, 259, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 5, "Bantamweight", "Mansur Yakhyaev", "Ajay Singh Dhoni", "R", "DECISION_SPLIT", 3, 300, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 6, "Welterweight", "Sharip Omarov", "Daksh Saxena", "R", "TKO", 2, 213, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 7, "Flyweight", "Sangramsingh Godse", "Santosh Yadav", "R", "KO_HEAD", 1, 287, "wds-fight-night-18"],
+      ["WDS Fight Night 18", "2026-08-29", 8, "Flyweight", "Sagar Ramdas Dange", "Nikhil Prajapati", "R", "TKO", 1, 321, "wds-fight-night-18"]
+    ];
+
+    const ALL_DIVISIONS = MEN_DIVISIONS.concat(WOMEN_DIVISIONS);
+    const DIVISION_BY_KEY = {};
+    ALL_DIVISIONS.forEach(d => { DIVISION_BY_KEY[d.key] = d; });
+
+    function norm(name) { return String(name || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    function divisionKey(weightClass) { return norm(weightClass).replace(/[^a-z]/g, ''); }
+
+    function winWeight(weights, resultType, round) {
+      const w = weights[resultType];
+      if (w == null) return 0;
+      if (Array.isArray(w)) return w[Math.min(Math.max(round || 3, 1), 3) - 1] || 0;
+      return w;
+    }
+    function rankingScore(f) {
+      const total = f.wins + f.losses + f.draws;
+      if (!total) return 0;
+      return ((100 * f.wins / total) * 0.7 + f.methodPoints * 0.3) * Math.sqrt(total);
+    }
+    function byScore(a, b) {
+      return (b.score - a.score) || (b.wins - a.wins) || a.name.localeCompare(b.name);
+    }
+
+    // Which ranking division a professional bout belongs to (null = not ranked).
+    function rankedDivision(b) {
+      let key = divisionKey(b.weightClass) || DIVISION_FIXES[norm(b.red) + '|' + norm(b.blue)] ||
+                DIVISION_FIXES[norm(b.blue) + '|' + norm(b.red)] || '';
+      const women = WOMEN_FIGHTERS.has(norm(b.red)) || WOMEN_FIGHTERS.has(norm(b.blue));
+      if (women) key = 'w-' + key;
+      return DIVISION_BY_KEY[key] ? key : null;
+    }
+
+    function buildDivisions(bouts, weights) {
+      const d = {};
+      ALL_DIVISIONS.forEach(x => { d[x.key] = { key: x.key, name: x.name, subtitle: x.subtitle, champion: null, fighters: [] }; });
+      const stats = {};
+      const get = name => stats[name] || (stats[name] = { name, wins: 0, losses: 0, draws: 0, ncs: 0, methodPoints: 0, division: null, last: null });
+
+      bouts
+        .map(b => Object.assign({}, b, { division: rankedDivision(b) }))
+        .filter(b => b.division && b.red && b.blue)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.boutNumber - b.boutNumber))
+        .forEach(b => {
+          [[b.red, b.blue, 'R', b.redPhoto, b.redId], [b.blue, b.red, 'B', b.bluePhoto, b.blueId]].forEach(([name, opponent, corner, photo, fid]) => {
+            const f = get(name);
+            if (photo) f.photo = photo;
+            if (fid) f.id = fid;
+            const before = rankingScore(f);
+            let outcome, earned = 0;
+            if (b.resultType === 'NO_CONTEST') { outcome = 'NC'; f.ncs++; }
+            else if (b.winner === corner) { outcome = 'W'; f.wins++; earned = winWeight(weights, b.resultType, b.round); f.methodPoints += earned; }
+            else if (b.winner) { outcome = 'L'; f.losses++; }
+            else { outcome = 'D'; f.draws++; }
+            f.division = b.division;
+            f.last = { outcome, resultType: b.resultType, round: b.round, sec: b.sec, opponent, event: b.event, earned, change: rankingScore(f) - before };
+          });
+        });
+
+      Object.values(stats).forEach(f => {
+        f.score = rankingScore(f);
+        f.record = `${f.wins}-${f.losses}-${f.draws}` + (f.ncs ? ` (${f.ncs} NC)` : '');
+        d[f.division].fighters.push(f);
+      });
+      Object.values(d).forEach(div => {
+        div.fighters.sort(byScore);
+        // Champion badge only for a fighter with at least one professional win.
+        div.champion = div.fighters.length && div.fighters[0].wins > 0 ? div.fighters[0].name : null;
+      });
+      return d;
+    }
+
+    function fromSaved(row) {
+      return { event: row[0], date: row[1], boutNumber: row[2], weightClass: row[3], red: row[4], blue: row[5],
+               winner: row[6], resultType: row[7], round: row[8], sec: row[9], slug: row[10] };
+    }
+
+    // ---- rendering (layout modelled on pflmma.com/rankings) ---------------------
+    // Fighter cut-out photos kept in assets/images (used when the database has no photo).
+    const FIGHTER_PHOTOS = {
+      'jeko laishram': 'Jeko_Laishram.png',
+      'gaganpal singh dua': 'Gaganpal_Singh.png',
+      'surbala devi laishram': 'Surbala_Laishram.png',
+      'ashish rawat': 'Ashish_Rawat.png',
+      'ben holdsworth': 'Ben_Holdsworth.png',
+      'bishal sahu': 'Bishal_Sahu.png',
+      'edukondal rao': 'Edukondal_Rao.png',
+      'kimson tony': 'Kimson.png',
+      'rohit raina': 'Rohit_Raina.png',
+      'sagar ramdas dange': 'Sagar_Dange.png',
+      'sangramsingh godse': 'Sangramsingh_Godase.png',
+      'thiaumuanlal guite': 'Thiaumuanlal_Guite.png',
+      'ajay singh dhoni': 'Ajay_Singh_Dhoni.png'
+    };
+    const TOP_SHOWN = 10;   // like pflmma.com: champion + the top 10 contenders per division
+    const SILHOUETTE = '<svg viewBox="0 0 120 130" aria-hidden="true"><circle cx="60" cy="38" r="26" fill="currentColor"/><path d="M8 130c4-38 26-58 52-58s48 20 52 58z" fill="currentColor"/></svg>';
+    const CROWN = '<svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 14h20l1.5-11-6.5 5L12 0 7 8 .5 3z" fill="currentColor"/></svg>';
+    const CHEVRON = '<svg class="pf-chevron" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+
+    function escapeText(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function clock(sec) { return sec == null ? '' : Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+    function signed(n) { return (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2); }
+    function photoFor(fighter) {
+      if (fighter.photo) return fighter.photo;
+      const file = FIGHTER_PHOTOS[norm(fighter.name)];
+      return file ? '../assets/images/' + file : null;
+    }
+
+    // Each fighter links to their profile (all their fights) — pages/fighter.html.
+    function profileLink(fighter, rank, division) {
+      const q = new URLSearchParams();
+      if (fighter.id) q.set('id', fighter.id); else q.set('name', fighter.name);
+      q.set('rank', rank);
+      q.set('div', division.name);
+      q.set('score', fighter.score.toFixed(2));
+      return 'fighter.html?' + q.toString();
+    }
+
+    function initials(name) {
+      return String(name || '').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase();
+    }
+
+    // One numbered line: black rank box · round headshot · name · record.
+    function rankingLine(fighter, rank, division) {
+      const photo = photoFor(fighter);
+      const head = photo
+        ? `<img src="${escapeText(photo)}" alt="" loading="lazy" onerror="this.replaceWith(document.createTextNode('${escapeText(initials(fighter.name))}'))">`
+        : escapeText(initials(fighter.name));
+      return `<li class="pf-line">
+          <a href="${profileLink(fighter, rank, division)}" title="${escapeText(fighter.record)} · score ${fighter.score.toFixed(2)}">
+            <span class="pf-rank">${rank}</span>
+            <span class="pf-head">${head}</span>
+            <span class="pf-name">${escapeText(fighter.name)}</span>
+            <span class="pf-record">${escapeText(fighter.record)}</span>
+          </a>
+        </li>`;
+    }
+
+    function championOf(division) {
+      return division.champion ? division.fighters[0] : null;
+    }
+
+    // Dark champion card for the hero strip.
+    function championCard(division) {
+      const champ = championOf(division);
+      const photo = champ ? photoFor(champ) : null;
+      const tag = champ ? 'a' : 'div';
+      const href = champ ? ` href="${profileLink(champ, 'C', division)}"` : '';
+      return `<${tag} class="pf-card${champ ? '' : ' is-vacant'}"${href}>
+          <div class="pf-card-division">${escapeText(division.name)}<span class="pf-card-weight">${escapeText(division.subtitle)}</span></div>
+          <div class="pf-card-watermark" aria-hidden="true">${escapeText(division.name.replace("Women's ", ''))}</div>
+          <div class="pf-card-img">${photo ? `<img src="${escapeText(photo)}" alt="${escapeText(champ.name)}" loading="lazy" onerror="this.remove()">` : SILHOUETTE}</div>
+          <div class="pf-card-info">
+            <div class="pf-card-meta">
+              <span class="pf-badge">${CROWN} Champion</span>
+              ${champ ? `<span class="pf-card-record">${escapeText(champ.record)}</span>` : ''}
+            </div>
+            <h3 class="pf-card-name${champ && champ.name.split(/\s+/).some(w => w.length > 9) ? ' is-long' : ''}">${champ ? escapeText(champ.name) : 'Vacant'}</h3>
+          </div>
+        </${tag}>`;
+    }
+
+    // White division box for the rankings grid: champion on top, then 1–10.
+    function divisionBox(division) {
+      const fighters = division.fighters;
+      const champ = championOf(division);
+      const contenders = (champ ? fighters.slice(1) : fighters).slice(0, TOP_SHOWN);
+      const photo = champ ? photoFor(champ) : null;
+      const top = `
+        <div class="pf-top${champ ? '' : ' is-vacant'}">
+          <div class="pf-top-badge">${CROWN} Champion</div>
+          <h4 class="pf-top-name">${champ ? `<a href="${profileLink(champ, 'C', division)}">${escapeText(champ.name)}</a>` : 'Vacant'}</h4>
+          <p class="pf-top-record">${champ ? `${escapeText(champ.record)} · score ${champ.score.toFixed(2)}` : ''}</p>
+          <div class="pf-top-img">${photo ? `<img src="${escapeText(photo)}" alt="${escapeText(champ.name)}" loading="lazy" onerror="this.remove()">` : SILHOUETTE}</div>
+        </div>`;
+      const list = contenders.length
+        ? `<ol class="pf-list">${contenders.map((f, i) => rankingLine(f, i + 1, division)).join('')}</ol>`
+        : `<p class="pf-empty">${fighters.length ? 'No ranked contenders yet.' : 'No ranked professional fighters yet.'}</p>`;
+      return `<article class="pf-box" data-division="${division.key}">
+          <div class="pf-box-title">
+            <button type="button" class="pf-toggle" aria-expanded="false">
+              <h3>${escapeText(division.name)}<span class="pf-box-weight">${escapeText(division.subtitle)}</span>${CHEVRON}</h3>
+            </button>
+          </div>
+          <div class="pf-box-body">${top}${list}</div>
+        </article>`;
+    }
+
+    let divisions = {};
+
+    function render(d) {
+      divisions = d;
+      // Keep opened divisions (mobile accordion) open across live refreshes.
+      const open = new Set([...document.querySelectorAll('.pf-box.open')].map(n => n.dataset.division));
+      document.getElementById('championsTrack').innerHTML = ALL_DIVISIONS.map(m => championCard(d[m.key])).join('');
+      document.getElementById('rankingsGrid').innerHTML = ALL_DIVISIONS.map(m => divisionBox(d[m.key])).join('');
+      open.forEach(key => {
+        const el = document.querySelector(`.pf-box[data-division="${key}"]`);
+        if (el) { el.classList.add('open'); el.querySelector('.pf-toggle').setAttribute('aria-expanded', 'true'); }
+      });
+    }
+
+    // Mobile: tap a division title to open / close it (desktop shows every division).
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.pf-toggle');
+      if (!btn || !window.matchMedia('(max-width: 767px)').matches) return;
+      const box = btn.closest('.pf-box');
+      const isOpen = box.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    // Live: finalized professional bouts and the current method weights from the WDS database.
+    function loadRankings() {
+      if (!window.WDS || !window.WDS.enabled) return Promise.reject(new Error('offline'));
+      return Promise.all([
+        window.WDS.events(),
+        window.WDS.rest('public_bout_card?select=event_id,bout_number,weight_class,red_name,blue_name,red_photo_url,blue_photo_url,red_fighter_id,blue_fighter_id,winner_id,result_type,end_round,end_time_sec&bout_type=eq.PROFESSIONAL&discipline=eq.MMA&result_status=eq.final'),
+        window.WDS.rest('ranking_method_weights?select=result_type,round_no,weight').catch(() => null)
+      ]).then(([events, rows, weightRows]) => {
+        if (!rows.length) throw new Error('no professional results yet');
+        const eventsById = {};
+        events.forEach(e => { eventsById[e.id] = e; });
+        const weights = JSON.parse(JSON.stringify(DEFAULT_WEIGHTS));
+        if (weightRows && weightRows.length) {
+          weightRows.forEach(w => {
+            if (w.round_no === 0) { if (!Array.isArray(weights[w.result_type])) weights[w.result_type] = Number(w.weight); }
+            else {
+              if (!Array.isArray(weights[w.result_type])) weights[w.result_type] = [0, 0, 0];
+              weights[w.result_type][w.round_no - 1] = Number(w.weight);
+            }
+          });
+        }
+        const bouts = rows.map(r => {
+          const e = eventsById[r.event_id] || {};
+          return { event: e.title || '', date: e.event_date || '', slug: e.slug || '', boutNumber: r.bout_number,
+                   weightClass: r.weight_class, red: r.red_name, blue: r.blue_name, redPhoto: r.red_photo_url, bluePhoto: r.blue_photo_url, redId: r.red_fighter_id, blueId: r.blue_fighter_id,
+                   winner: r.winner_id && r.winner_id === r.red_fighter_id ? 'R' : r.winner_id && r.winner_id === r.blue_fighter_id ? 'B' : '',
+                   resultType: r.result_type, round: r.end_round, sec: r.end_time_sec };
+        });
+        render(buildDivisions(bouts, weights));
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      render(buildDivisions(SAVED_PRO_BOUTS.map(fromSaved), DEFAULT_WEIGHTS));
+      loadRankings()
+        .then(() => window.WDS.subscribe(['fighter_rankings', 'bout_points'], () => loadRankings().catch(() => {})))
+        .catch(e => console.warn('[wds] rankings: using the saved list', e && e.message));
+    });
+  </script>
+</body>
+</html>
